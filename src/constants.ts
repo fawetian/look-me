@@ -19,6 +19,8 @@ export const MONITOR_CONFIG = {
   minBlinkDurationMs: 45,
   maxBlinkDurationMs: 420,
   minBlinkGapMs: 120,
+  historyWindowMs: 600_000,
+  historySampleIntervalMs: 10_000,
 } as const;
 
 export const APP_COPY = {

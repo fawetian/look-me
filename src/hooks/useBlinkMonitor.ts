@@ -5,6 +5,7 @@ import { calculateEyeAspectRatio, computeBlinkRate } from '../lib/blink';
 import { createFaceLandmarker } from '../lib/faceLandmarker';
 import type {
   AlertState,
+  BlinkHistoryPoint,
   FaceState,
   MonitorError,
   MonitorErrorCode,
@@ -21,12 +22,14 @@ function createInitialSnapshot(): MonitorSnapshot {
     error: null,
     metrics: {
       blinkCountWindow: 0,
+      blinkCount10s: 0,
       blinkRatePerMinute: 0,
       averageEar: null,
       lastBlinkAt: null,
       alertCount: 0,
       cooldownRemainingMs: 0,
       observedWindowMs: 0,
+      blinkHistory: [],
     },
   };
 }
@@ -85,6 +88,8 @@ export function useBlinkMonitor(videoRef: RefObject<HTMLVideoElement | null>) {
     let alertState: AlertState = 'normal';
     let blinkTimestamps: number[] = [];
     let lastFaceSeenAt: number | null = null;
+    let blinkHistory: BlinkHistoryPoint[] = [];
+    let lastHistorySampleAt = 0;
     const startedAt = performance.now();
 
     setSnapshot({
@@ -122,6 +127,7 @@ export function useBlinkMonitor(videoRef: RefObject<HTMLVideoElement | null>) {
 
       const observedWindowMs = Math.min(now - startedAt, MONITOR_CONFIG.blinkWindowMs);
       const blinkCountWindow = blinkTimestamps.length;
+      const blinkCount10s = blinkTimestamps.filter((timestamp) => now - timestamp <= 10_000).length;
       const blinkRatePerMinute = computeBlinkRate(blinkCountWindow, observedWindowMs);
       const cooldownRemainingMs =
         lastAlertAt === null
@@ -150,6 +156,20 @@ export function useBlinkMonitor(videoRef: RefObject<HTMLVideoElement | null>) {
         alertState = 'normal';
       }
 
+      // Sample history data every 10 seconds
+      if (now - lastHistorySampleAt >= MONITOR_CONFIG.historySampleIntervalMs) {
+        lastHistorySampleAt = now;
+        blinkHistory.push({
+          timestamp: now,
+          blinks10s: blinkCount10s,
+          blinkRatePerMinute,
+        });
+        // Keep only last 10 minutes of history
+        blinkHistory = blinkHistory.filter(
+          (point) => now - point.timestamp <= MONITOR_CONFIG.historyWindowMs
+        );
+      }
+
       setSnapshot({
         permissionState: 'granted',
         cameraState: 'ready',
@@ -159,12 +179,14 @@ export function useBlinkMonitor(videoRef: RefObject<HTMLVideoElement | null>) {
         error: null,
         metrics: {
           blinkCountWindow,
+          blinkCount10s,
           blinkRatePerMinute,
           averageEar,
           lastBlinkAt,
           alertCount,
           cooldownRemainingMs: nextCooldownRemainingMs,
           observedWindowMs,
+          blinkHistory,
         },
       });
     };

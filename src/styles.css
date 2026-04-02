@@ -334,6 +334,26 @@ button:hover {
   gap: 0.9rem;
 }
 
+.chart-container {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 20px;
+  background: var(--card-strong);
+  border: 1px solid rgba(54, 41, 28, 0.08);
+}
+
+.chart-container .section-label {
+  margin-bottom: 0.5rem;
+}
+
+.chart-empty {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+}
+
 .shell[data-alert='low'] .alert-panel,
 .shell[data-alert='low'] .preview-card {
   border-color: rgba(197, 84, 45, 0.28);

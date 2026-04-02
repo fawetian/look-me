@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 
 import { APP_COPY, MONITOR_CONFIG } from './constants';
+import { BlinkChart } from './components/BlinkChart';
 import { useBlinkMonitor } from './hooks/useBlinkMonitor';
 import type { AlertState, FaceState } from './types';
 
@@ -156,6 +157,10 @@ export default function App() {
               <strong>{formatRate(monitor.metrics.blinkRatePerMinute)}</strong>
             </div>
             <div className="metric-block">
+              <span>Blinks in 10s</span>
+              <strong>{monitor.metrics.blinkCount10s}</strong>
+            </div>
+            <div className="metric-block">
               <span>Blinks in window</span>
               <strong>{monitor.metrics.blinkCountWindow}</strong>
             </div>
@@ -186,6 +191,11 @@ export default function App() {
                   : 'Ready'}
               </strong>
             </div>
+          </div>
+
+          <div className="chart-container">
+            <p className="section-label">Blink history (last 10 min)</p>
+            <BlinkChart data={monitor.metrics.blinkHistory} />
           </div>
         </article>
       </section>

@@ -8,14 +8,22 @@ export type MonitorErrorCode =
   | 'model_load_failed'
   | 'unknown';
 
+export interface BlinkHistoryPoint {
+  timestamp: number;
+  blinks10s: number;
+  blinkRatePerMinute: number;
+}
+
 export interface MonitorMetrics {
   blinkCountWindow: number;
+  blinkCount10s: number;
   blinkRatePerMinute: number;
   averageEar: number | null;
   lastBlinkAt: number | null;
   alertCount: number;
   cooldownRemainingMs: number;
   observedWindowMs: number;
+  blinkHistory: BlinkHistoryPoint[];
 }
 
 export interface MonitorError {
